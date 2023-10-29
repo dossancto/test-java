@@ -6,11 +6,18 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Program {
-    public void execute()
+    public void onCreate()
+    {
+        loadPokemons();
+        // loadViews();
+        // ....
+    }
+
+    private void loadPokemons()
     {
         new ListPokemonUseCase().execute(
                 Arrays.asList("bulbasaur", "charmander", "squirtle", "carterpie", "weedle", "pidgey", "rattata",
-                "spearow", "ekans", "pikachu", "sandshrew", "clfairy", "ninetales", "jigglypuff"),
+                        "spearow", "ekans", "pikachu", "sandshrew", "clfairy", "ninetales", "jigglypuff"),
 
                 this::updatePokemonList,
                 this::handlePokemonFail);
@@ -21,7 +28,7 @@ public class Program {
     private void updatePokemonList(Pokemon pokemon)
     {
         // Update UI
-        System.out.println("Found " + pokemon.name());
+        System.out.println("Fetch " + pokemon.name());
     }
 }
 
@@ -38,8 +45,6 @@ class ListPokemonUseCase {
 record Pokemon(String name) {}
 
 class PokemonService{
-    public PokemonService(){ }
-
     public Pokemon pokemonFromQuery(String id) throws Exception
     {
         if(id.equals("ekans")){

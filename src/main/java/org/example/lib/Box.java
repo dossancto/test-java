@@ -25,21 +25,15 @@ public class Box {
             theValue = input;
         }
 
-        public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input){
-            return new BoxContent<R>(() -> {
-                try {
-                    return input.run(theValue.run());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-
         public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input, RunBoxWithP<Exception> ex){
             return new BoxContent<R>(() -> {
                 try {
                     return input.run(theValue.run());
                 } catch (Exception e) {
+                    if(ex == null){
+                        throw new RuntimeException(e);
+                    }
+
                     ex.run(e);
                     return null;
                 }
