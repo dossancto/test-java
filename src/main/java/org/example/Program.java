@@ -14,11 +14,7 @@ public class Program {
 
     private void loadPokemons(List<String> pokemonsToShow){
         Box.from(pokemonsToShow)
-                .eachFinalAsync((String id) ->
-                        Box.from(id)
-                            .then(_pokemonService::pokemonFromQuery, this::handlePokemonFail)
-                            .thenFinal(this::updatePokemonList),
-                System.out::println);
+                .eachFinalAsync(this::fetchPoke);
     }
 
     private void fetchPoke(String id){
@@ -29,9 +25,6 @@ public class Program {
 
     // Draw a default card or something ...
     private void handlePokemonFail(Exception e){ System.out.println(e.getMessage()); }
-
-    private void handlePokemonFail(Exception e)
-            -> System.out.println(e.getMessage());
 
     private void updatePokemonList(Pokemon pokemon) {
         // Update UI

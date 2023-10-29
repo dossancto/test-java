@@ -26,22 +26,24 @@ public class Box {
         }
 
         public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input){
-            RunBox f = () -> {
+            return new BoxContent<R>(() -> {
                 try {
                     return input.run(theValue.run());
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-            };
-            return new BoxContent<R>(f);
+            });
         }
 
         public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input, RunBoxWithP<Exception> ex){
-            try{
-                then(input);
-            } catch (Exception e){
-                ex.run(e);
-            }
+            return new BoxContent<R>(() -> {
+                try {
+                    return input.run(theValue.run());
+                } catch (Exception e) {
+                    ex.run(e);
+                    return null;
+                }
+            });
         }
 
         public void thenFinal(RunBoxWithP<T> input){
@@ -88,11 +90,13 @@ public class Box {
         }
 
         public <S> void eachFinalAsync(RunBoxWithP<S> function, RunBoxWithP<Exception> ex){
-            try{
-                eachFinalAsync(function);
-            } catch (Exception e){
-                ex.run(e);
-            }
+            new Fetcher().async(() -> {
+                try {
+                    eachFinal(function);
+                } catch (Exception e) {
+                    ex.run(e);
+                }
+            });
         }
 
         public T unwrap(){
@@ -105,4 +109,3 @@ public class Box {
         }
     }
 }
-
