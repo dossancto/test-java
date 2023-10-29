@@ -6,32 +6,35 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Program {
-    private final PokemonService _pokemonService = new PokemonService();
-    public void execute(){
-        loadPokemons(Arrays.asList("bulbasaur", "charmander", "squirtle", "carterpie", "weedle", "pidgey", "rattata",
-                "spearow", "ekans", "pikachu", "sandshrew", "clfairy", "ninetales", "jigglypuff"));
+    public void execute()
+    {
+        new ListPokemonUseCase().execute(
+                Arrays.asList("bulbasaur", "charmander", "squirtle", "carterpie", "weedle", "pidgey", "rattata",
+                "spearow", "ekans", "pikachu", "sandshrew", "clfairy", "ninetales", "jigglypuff"),
+
+                this::updatePokemonList,
+                this::handlePokemonFail);
     }
 
-    private void loadPokemons(List<String> pokemonsToShow){
-        Box.from(pokemonsToShow)
-                .eachFinalAsync(this::fetchPoke);
-    }
-
-    private void fetchPoke(String id){
-        Box.from(id)
-            .then(_pokemonService::pokemonFromQuery, this::handlePokemonFail)
-            .thenFinal(this::updatePokemonList);
-    }
-
-    // Draw a default card or something ...
     private void handlePokemonFail(Exception e){ System.out.println(e.getMessage()); }
 
-    private void updatePokemonList(Pokemon pokemon) {
+    private void updatePokemonList(Pokemon pokemon)
+    {
         // Update UI
         System.out.println("Found " + pokemon.name());
     }
 }
 
+class ListPokemonUseCase {
+    private final PokemonService _pokemonService = new PokemonService();
+
+    public void execute(List<String> pokemons, Box.RunBoxWithP<Pokemon> newPokemon, Box.RunBoxWithP<Exception> pokemonfetchFail) {
+        Box.from(pokemons)
+            .eachFinalAsync((String id) -> Box.from(id)
+                                                .then(_pokemonService::pokemonFromQuery, pokemonfetchFail)
+                                                .thenFinal(newPokemon));
+    }
+}
 record Pokemon(String name) {}
 
 class PokemonService{
