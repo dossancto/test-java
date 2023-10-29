@@ -37,15 +37,11 @@ public class Box {
         }
 
         public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input, RunBoxWithP<Exception> ex){
-            RunBox f = () -> {
-                try {
-                    return input.run(theValue.run());
-                } catch (Exception e) {
-                    ex.run(e);
-                    return null;
-                }
-            };
-            return new BoxContent<R>(f);
+            try{
+                then(input);
+            } catch (Exception e){
+                ex.run(e);
+            }
         }
 
         public void thenFinal(RunBoxWithP<T> input){
@@ -92,13 +88,11 @@ public class Box {
         }
 
         public <S> void eachFinalAsync(RunBoxWithP<S> function, RunBoxWithP<Exception> ex){
-            new Fetcher().async(() -> {
-                try {
-                    eachFinal(function);
-                } catch (Exception e) {
-                    ex.run(e);
-                }
-            });
+            try{
+                eachFinalAsync(function);
+            } catch (Exception e){
+                ex.run(e);
+            }
         }
 
         public T unwrap(){
