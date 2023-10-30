@@ -23,12 +23,26 @@ public class Program {
                 this::handlePokemonFail);
     }
 
-    private void handlePokemonFail(Exception e){ System.out.println(e.getMessage()); }
+    private void handlePokemonFail(Exception e) {
+        Box.from(new Pokemon("Empty"))
+            .then(p -> new PokemonCard(p, "gray"))
+            .thenFinal(this::renderCard);
+    }
 
     private void updatePokemonList(Pokemon pokemon)
     {
-        // Update UI
-        System.out.println("Fetch " + pokemon.name());
+        Box.from(pokemon)
+                .then(this::pokemonToCard)
+                .thenFinal(this::renderCard);
+    }
+
+    private void renderCard(PokemonCard card){
+        System.out.printf("%s => %s%n", card.pokemon().name(), card.color());
+    }
+
+    private PokemonCard pokemonToCard(Pokemon pokemon)
+    {
+        return new PokemonCard(pokemon, "red");
     }
 }
 
@@ -36,13 +50,15 @@ class ListPokemonUseCase {
     private final PokemonService _pokemonService = new PokemonService();
 
     public void execute(List<String> pokemons, Box.RunBoxWithP<Pokemon> newPokemon, Box.RunBoxWithP<Exception> pokemonfetchFail) {
-        Box.from(pokemons)
-            .eachFinalAsync((String id) -> Box.from(id)
-                                                .then(_pokemonService::pokemonFromQuery, pokemonfetchFail)
-                                                .thenFinal(newPokemon));
+        for (var pokemon : pokemons){
+            Box.from(pokemon)
+                    .then(_pokemonService::pokemonFromQuery, pokemonfetchFail)
+                    .thenFinal(newPokemon);
+        }
     }
 }
 record Pokemon(String name) {}
+record PokemonCard(Pokemon pokemon, String color) {}
 
 class PokemonService{
     public Pokemon pokemonFromQuery(String id) throws Exception
@@ -54,4 +70,3 @@ class PokemonService{
         return new Pokemon(id);
     }
 }
-

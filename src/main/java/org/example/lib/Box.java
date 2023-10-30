@@ -25,6 +25,10 @@ public class Box {
             theValue = input;
         }
 
+        public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input) {
+            return then(input, null);
+        }
+
         public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input, RunBoxWithP<Exception> ex){
             return new BoxContent<R>(() -> {
                 try {
@@ -45,52 +49,6 @@ public class Box {
             if(val == null) return;
 
             input.run(val);
-        }
-
-        public <R, S> BoxContent<List<R>> each(RunBoxWithReturn<S, R> function) throws Exception {
-            List<R> mappedList = new ArrayList<>();
-
-            var value = theValue.run();
-            if(value == null) return new BoxContent<>(null);
-
-            if (!(value instanceof List<?>)){
-                throw new Exception("Isso não é uma lista " + theValue);
-            }
-
-            var listVal = (List<S>) value;
-
-            for(var a : listVal){
-                mappedList.add(function.run(a));
-            }
-
-            return new BoxContent<>(mappedList);
-        }
-
-        public <S> void eachFinal(RunBoxWithP<S> function) throws Exception {
-            each((p) -> {
-                function.run((S) p);
-
-                return 0;
-            });
-        }
-        public <S> void eachFinalAsync(RunBoxWithP<S> function){
-            new Fetcher().async(() -> {
-                try {
-                    eachFinal(function);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-
-        public <S> void eachFinalAsync(RunBoxWithP<S> function, RunBoxWithP<Exception> ex){
-            new Fetcher().async(() -> {
-                try {
-                    eachFinal(function);
-                } catch (Exception e) {
-                    ex.run(e);
-                }
-            });
         }
 
         public T unwrap(){
