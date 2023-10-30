@@ -1,12 +1,8 @@
 package org.example.lib;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
 public class Box {
     public static <P> BoxContent<P> from(P initialValue){
-        return new BoxContent<P>(initialValue);
+        return new BoxContent<>(initialValue);
     }
 
     public interface RunBox<R> { R run(); }
@@ -25,18 +21,15 @@ public class Box {
             theValue = input;
         }
 
-        public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input) {
-            return then(input, null);
-        }
-
         public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input, RunBoxWithP<Exception> ex){
-            return new BoxContent<R>(() -> {
+            return new BoxContent<>(() -> {
                 try {
-                    return input.run(theValue.run());
+                    var val = theValue.run();
+                    if(val == null) return null;
+
+                    return input.run(val);
                 } catch (Exception e) {
-                    if(ex == null){
-                        throw new RuntimeException(e);
-                    }
+                    if(ex == null) throw new RuntimeException(e);
 
                     ex.run(e);
                     return null;
@@ -44,11 +37,16 @@ public class Box {
             });
         }
 
-        public void thenFinal(RunBoxWithP<T> input){
-            var val = theValue.run();
-            if(val == null) return;
+        public <R> BoxContent<R> then(RunBoxWithReturn<T, R> input) {
+            return then(input, null);
+        }
 
-            input.run(val);
+        public void thenFinal(RunBoxWithP<T> input){
+            then(v -> {
+                input.run(v);
+                return v;
+            })
+            .unwrap();
         }
 
         public T unwrap(){

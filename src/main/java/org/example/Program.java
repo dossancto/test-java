@@ -23,7 +23,9 @@ public class Program {
                 this::handlePokemonFail);
     }
 
-    private void handlePokemonFail(Exception e) {
+    private void handlePokemonFail(Exception e)
+    {
+        System.out.println(e.getMessage());
         Box.from(new Pokemon("Empty"))
             .then(p -> new PokemonCard(p, "gray"))
             .thenFinal(this::renderCard);
@@ -36,7 +38,8 @@ public class Program {
                 .thenFinal(this::renderCard);
     }
 
-    private void renderCard(PokemonCard card){
+    private void renderCard(PokemonCard card)
+    {
         System.out.printf("%s => %s%n", card.pokemon().name(), card.color());
     }
 
